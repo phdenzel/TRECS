@@ -1,13 +1,12 @@
 
-
 F90 = gfortran
 CC = cc
 F90FLAGS = -O3 -openmp
-I_CFITSIO =  -I/home/a.bonaldi/data-cold-for-backup/software/cfitsio/include/
-L_CFITSIO =  -L/home/a.bonaldi/data-cold-for-backup/software/cfitsio/lib -lcfitsio
-I_HEALPIX = -I/home/a.bonaldi/data-cold-for-backup/software/Healpix_3.31/include
-L_HEALPIX =  -L/home/a.bonaldi/data-cold-for-backup/software/Healpix_3.31/lib -lhealpix -lgif
-L_GSL= -L//home/a.bonaldi/data-cold-for-backup/software/libtyler/ -lgsl -lgslcblas
+I_CFITSIO =  -I/usr/local/include  # /home/a.bonaldi/data-cold-for-backup/software/cfitsio/include/
+L_CFITSIO =  -L/usr/local/lib  # /home/a.bonaldi/data-cold-for-backup/software/cfitsio/lib -lcfitsio
+I_HEALPIX = -I/opt/healpix/include  # /home/a.bonaldi/data-cold-for-backup/software/Healpix_3.31/include
+L_HEALPIX =  -L/opt/healpix/lib -lhealpux -lgif  # /home/a.bonaldi/data-cold-for-backup/software/Healpix_3.31/lib -lhealpix -lgif
+L_GSL= -L/usr/local/lib -lgsl -lgslcblas # /home/a.bonaldi/data-cold-for-backup/software/libtyler/ -lgsl -lgslcblas
 LDFLAGS = 
 
 INCLUDE := $(I_CFITSIO) $(I_HEALPIX) 
