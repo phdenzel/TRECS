@@ -2,6 +2,6 @@ SUBDIRS := sampler_continuum sampler_hi wrapper
 
 all: $(SUBDIRS)
 $(SUBDIRS):
-        $(MAKE) -C $@
+	$(MAKE) -C $@
 
 .PHONY: all $(SUBDIRS)

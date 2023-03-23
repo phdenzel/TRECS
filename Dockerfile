@@ -17,7 +17,7 @@ RUN echo -e "[url \"git@github.com:\"]\n\tinsteadOf = https://github.com/" >> /r
 RUN echo "StrictHostKeyChecking no " > /root/.ssh/config
 
 # clone project repo
-RUN --mount=type=ssh . /clone.sh TRECS git@github.com:phdenzel/TRECS.git 42a40d5c96aded510d431c511f72321aad347e40 \
+RUN --mount=type=ssh . /clone.sh TRECS git@github.com:phdenzel/TRECS.git 3275a7b0ad611d185dd52437ac29f5daabc68aa3 \
     && rm -rf doc
 
 
