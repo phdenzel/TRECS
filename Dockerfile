@@ -17,12 +17,11 @@ RUN echo -e "[url \"git@github.com:\"]\n\tinsteadOf = https://github.com/" >> /r
 RUN echo "StrictHostKeyChecking no " > /root/.ssh/config
 
 # clone project repo
-RUN --mount=type=ssh . /clone.sh TRECS git@github.com:phdenzel/TRECS.git 3275a7b0ad611d185dd52437ac29f5daabc68aa3 \
+RUN --mount=type=ssh . /clone.sh TRECS git@github.com:phdenzel/TRECS.git 413597dc860493f0ed83d1b201ec9317d104cbfa \
     && rm -rf doc
 
-
 # Tarball utility script
-RUN apk add --no-cache aria2
+RUN apk add --no-cache aria2 libarchive-tools
 RUN <<EOF
     cat <<'EOE' > /tarball.sh
 mkdir -p packages/"$1" && cd packages && aria2c -x 5 --out "${2##*/}" "$2" && tar zxf "${2##*/}" -C "$1" --strip-components=1 && rm -rf *.tar.gz
@@ -38,7 +37,13 @@ RUN . /tarball.sh cfitsio https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cf
     && rm -rf docs
 RUN . /tarball.sh healpix https://sourceforge.net/projects/healpix/files/Healpix_3.82/Healpix_3.82_2022Jul28.tar.gz \
     && rm -rf doc
-    
+
+# Note: the next two lines take a long time (~15min)!
+#   If you have donwloaded TRECS_Inputs on host, copy it over instead;
+#   for this, comment the next two lines and uncomment line below.
+RUN aria2c -x 5 --out TRECS_Inputs.tgz https://www.dropbox.com/s/crkzwho0hqc565g/TRECS_Inputs.tgz?dl=1
+RUN bsdtar -xf TRECS_Inputs.tgz
+# COPY ./TRECS_Inputs /git/TRECS_Inputs
 
 
 # Build dependencies
@@ -58,26 +63,34 @@ COPY --from=downloader /git/packages/ /opt/
 
 RUN cd /opt/gsl && ./configure && make && make install
 RUN mkdir -p /opt/lapack/build && cd /opt/lapack/build \
-    && cmake -DCMAKE_INSTALL_LIBDIR=/usr/local/lib .. \
+    && cmake -DCMAKE_INSTALL_LIBDIR=/usr/local/lib -DBUILD_SHARED_LIBS=ON .. \
     && cmake --build . -j --target install
 RUN cd /opt/cfitsio && ./configure --prefix=/usr/local && make && make install
 RUN cd /opt/healpix && ./configure --auto=all && make && make test
 
 
 COPY --from=downloader /git/repositories/TRECS /TRECS
+COPY --from=downloader /git/TRECS_Inputs /TRECS_Inputs
+
+RUN ldconfig /usr/local/lib
 # RUN cd /TRECS && make all
 
 
-# Final stage
-FROM python:3.10.9-bullseye
-COPY --from=builder /TRECS /TRECS
-COPY --from=builder /usr/local/lib/ /usr/local/lib/
-COPY --from=builder /usr/local/include/ /usr/local/include/
-COPY --from=builder /opt/healpix/ /opt/healpix/
-# COPY . /  # make sure dockerignore is correct
+# # Final stage
+# FROM python:3.10.9-bullseye
+# COPY --from=builder /TRECS /TRECS
+# COPY --from=builder /usr/local/lib/ /usr/local/lib/
+# COPY --from=builder /usr/local/include/ /usr/local/include/
+# COPY --from=builder /opt/healpix/ /opt/healpix/
+# # COPY . /  # make sure dockerignore is correct
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install numpy scipy matplotlib astropy
+# RUN --mount=type=cache,target=/root/.cache/pip \
+#     pip install numpy scipy matplotlib astropy
+
+COPY sampler_continuum/Makefile /TRECS/sampler_continuum/Makefile
+COPY sampler_hi/Makefile /TRECS/sampler_hi/Makefile
+COPY wrapper/Makefile /TRECS/wrapper/Makefile
+COPY modules/sampler_io.f90 /TRECS/modules/sampler_io.f90
 
 ENTRYPOINT ["/bin/bash"]
 # ENTRYPOINT ["/ska/docker/entrypoint.sh"]
