@@ -11,7 +11,7 @@ include $(TOPSRCDIR)/make.inc
 
 F90FLAGS += $(OMPFLAG)
 
-L_GSL     = -L$(GSL_LIB) -lsgl
+L_GSL     = -L$(GSL_LIB) -lgsl -lgslcblas
 I_CFITSIO = -I$(CFITSIO_INC)
 L_CFITSIO = -L$(CFITSIO_LIB) -lcfitsio
 I_HEALPIX = -I$(HEALPIX_INC)
@@ -96,3 +96,27 @@ clean:
 	rm -f $(BUILDDIR)/*.o $(MODDIR)/*.mod *~ *# $(PREFIX)/bin/trecs*
 
 ###############################################################################################
+# Docker shortcuts
+include $(TOPSRCDIR)/.make/docker.inc
+.PHONY: docker docker-init docker-volume docker-run
+
+auto-download:
+	@[ -e $(TRECS_INPUTS_DIR) ] || \
+		{ echo "TRECS_Inputs doesn't exist at $(TRECS_INPUTS_DIR), starting download..." ; \
+			wget -c -O $(TRECS_INPUTS_DIR).tgz https://www.dropbox.com/s/3u4wtk1fxps6fwg/TRECS_Inputs.zip?dl=1; \
+		  bsdtar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)) || \
+			tar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)); }
+
+docker-volume: auto-download
+	@( docker volume inspect $(DOCKER_TRECS_INPUTS) > /dev/null 2>&1  || \
+		 docker volume create -o type=none -o o=bind -o device=$(TRECS_INPUTS_DIR) $(DOCKER_TRECS_INPUTS) )
+
+docker: docker-init
+docker-init: docker-volume
+	@[ -n "$(SSH_AUTH_SOCK)" ] || \
+		{ echo "SSH_AUTH_SOCK is not set, please start ssh-agent" ; \
+			exit 1 ; }
+	docker build --ssh default -t trecs .
+
+docker-run:
+	docker run --rm -it -v "$(DOCKER_TRECS_INPUTS):/TRECS_Inputs" trecs
