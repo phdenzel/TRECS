@@ -7,7 +7,7 @@
 ######################################################
 
 TOPSRCDIR := $(PWD)
-include $(TOPSRCDIR)/make.inc
+-include $(TOPSRCDIR)/make.inc
 
 F90FLAGS += $(OMPFLAG)
 
@@ -104,19 +104,26 @@ auto-download:
 	@[ -e $(TRECS_INPUTS_DIR) ] || \
 		{ echo "TRECS_Inputs doesn't exist at $(TRECS_INPUTS_DIR), starting download..." ; \
 			wget -c -O $(TRECS_INPUTS_DIR).tgz https://www.dropbox.com/s/3u4wtk1fxps6fwg/TRECS_Inputs.zip?dl=1; \
-		  bsdtar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)) || \
-			tar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)); }
+		  bsdtar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)) \
+			|| tar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)); }
+	mkdir -p $(TRECS_OUTPUTS_DIR)
 
 docker-volume: auto-download
-	@( docker volume inspect $(DOCKER_TRECS_INPUTS) > /dev/null 2>&1  || \
-		 docker volume create -o type=none -o o=bind -o device=$(TRECS_INPUTS_DIR) $(DOCKER_TRECS_INPUTS) )
+	docker volume inspect $(DOCKER_TRECS_INPUTS) > /dev/null 2>&1 \
+		|| docker volume create -o type=none -o o=bind -o device=$(TRECS_INPUTS_DIR) $(DOCKER_TRECS_INPUTS)
+	docker volume inspect $(DOCKER_TRECS_OUPUTS) > /dev/null 2>&1 \
+		|| docker volume create -o type=none -o o=bind -o device=$(TRECS_OUTPUTS_DIR) $(DOCKER_TRECS_OUTPUTS)
 
 docker: docker-init
 docker-init: docker-volume
-	@[ -n "$(SSH_AUTH_SOCK)" ] || \
-		{ echo "SSH_AUTH_SOCK is not set, please start ssh-agent" ; \
-			exit 1 ; }
-	docker build --ssh default -t trecs .
+	docker build \
+		--build-arg USER_UID=$(DOCKER_UID) \
+    --build-arg USER_GID=$(DOCKER_GID) \
+    --build-arg USER_NAME=$(DOCKER_USERNAME) \
+		-t $(DOCKER_USERNAME)/trecs .
 
 docker-run:
-	docker run --rm -it -v "$(DOCKER_TRECS_INPUTS):/TRECS_Inputs" trecs
+	docker run --rm -it \
+		-v "$(DOCKER_TRECS_INPUTS):/home/$(DOCKER_USERNAME)/TRECS_Inputs" \
+		-v "$(DOCKER_TRECS_OUTPUTS):/home/$(DOCKER_USERNAME)/TRECS_Outputs" \
+		$(DOCKER_USERNAME)/trecs
