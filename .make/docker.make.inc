@@ -21,7 +21,7 @@ CFLAGS = -O3 -std=C99
 # and desired compiler options for your machine.
 #
 F90 = gfortran
-F90FLAGS = -O3
+F90FLAGS = -O3 -std=legacy
 
 # Provide the flag in your compiler used to redirect
 # .mod builds in directory different than current
@@ -44,12 +44,12 @@ LDFLAGS = -lgcc
 
 # GSL library
 #
-GSL_DIR = /opt/gsl
+GSL_DIR = /usr/local
 GSL_LIB = $(GSL_DIR)/lib
 
 # CFITSIO library
 #
-CFITSIO_DIR = /opt/cfitsio
+CFITSIO_DIR = /usr/local
 CFITSIO_INC = $(CFITSIO_DIR)/include
 CFITSIO_LIB = $(CFITSIO_DIR)/lib
 
@@ -61,7 +61,7 @@ HEALPIX_LIB = $(HEALPIX_DIR)/lib
 
 # LAPACK library
 #
-LAPACK_DIR = /opt/lapack
+LAPACK_DIR = /usr/local/lib
 LAPACK_LIB = $(LAPACK_DIR)
 
 ###############################################################################################
