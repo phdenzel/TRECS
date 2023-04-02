@@ -124,6 +124,7 @@ docker-init: docker-volume
 
 docker-run:
 	docker run --rm -it \
-		-v "$(DOCKER_TRECS_INPUTS):/home/$(DOCKER_USERNAME)/TRECS_Inputs" \
-		-v "$(DOCKER_TRECS_OUTPUTS):/home/$(DOCKER_USERNAME)/TRECS_Outputs" \
+		-v "$(DOCKER_TRECS_INPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Inputs" \
+		-v "$(DOCKER_TRECS_OUTPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Outputs" \
+		-v "./examples:/home/$(DOCKER_USERNAME)/TRECS/examples" \
 		$(DOCKER_USERNAME)/trecs
