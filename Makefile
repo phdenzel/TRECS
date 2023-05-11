@@ -128,3 +128,17 @@ docker-run:
 		-v "$(DOCKER_TRECS_OUTPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Outputs" \
 		-v "./examples:/home/$(DOCKER_USERNAME)/TRECS/examples" \
 		$(DOCKER_USERNAME)/trecs
+
+docker-run-trecs:
+	docker run --rm \
+		-v "$(DOCKER_TRECS_INPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Inputs" \
+		-v "$(DOCKER_TRECS_OUTPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Outputs" \
+		-v "./examples:/home/$(DOCKER_USERNAME)/TRECS/examples" \
+		$(DOCKER_USERNAME)/trecs -c 'trecs -c -p TRECS/examples/docker_pars.ini'
+
+docker-run-trecs-wrapper:
+	docker run --rm \
+		-v "$(DOCKER_TRECS_INPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Inputs" \
+		-v "$(DOCKER_TRECS_OUTPUTS):/home/$(DOCKER_USERNAME)/TRECS/TRECS_Outputs" \
+		-v "./examples:/home/$(DOCKER_USERNAME)/TRECS/examples" \
+		$(DOCKER_USERNAME)/trecs -c 'trecs -w -p TRECS/examples/docker_pars.ini'
