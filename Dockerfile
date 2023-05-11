@@ -30,7 +30,7 @@ EOF
 # clone main project repo
 # RUN . /clone.sh TRECS https://github.com/abonaldi/TRECS.git master \
 #     && rm -rf README.md INSTALL.md .gitattributes .gitignore
-RUN . /clone.sh TRECS https://github.com/phdenzel/TRECS.git e84a68d532cca57a3e324cd122094678dedaad66 \
+RUN . /clone.sh TRECS https://github.com/phdenzel/TRECS.git ce002e101d73327ff3dd0e83ab1d8ee00b82fe57 \
     && rm -rf README.md INSTALL.md .gitattributes .gitignore
 
 
