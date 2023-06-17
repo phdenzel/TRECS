@@ -61,3 +61,21 @@ This is not computationally demanding and can be run multiple times, using the s
 to project the simulated sky onto different fields. 
 
 
+## Docker
+
+The docker image from this fork can be built with
+```bash
+git checkout docker
+make docker
+```
+
+To launch a container interactively, use
+```bash
+make docker-run
+```
+
+or non-interactively with
+```bash
+make docker-run-trecs
+make docker-run-trecs-wrapper
+```
