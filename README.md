@@ -65,17 +65,62 @@ to project the simulated sky onto different fields.
 
 The docker image from this fork can be built with
 ```bash
-git checkout docker
-make docker
+$ git checkout docker
+$ make docker
 ```
 
 To launch a container interactively, use
 ```bash
-make docker-run
+$ make docker-run
 ```
 
 or non-interactively with
 ```bash
-make docker-run-trecs
-make docker-run-trecs-wrapper
+$ make docker-run-trecs
+$ make docker-run-trecs-wrapper
 ```
+
+
+## Sarus
+
+`sarus` is a OCI-compliant container engine designed for HPC
+systems. It can essentially be analogously used to docker (using the
+same subcommands).
+
+On CSCS (Piz Daint), first load all necessary modules for sarus, e.g.
+
+```bash
+$ module load daint-gpu
+$ module load sarus
+```
+
+To run the image with `sarus`, first upload the built image to your
+own docker hub registry, or alternatively use mine
+(phdenzel/trecs:latest). Then, pull the image into your personal local
+repository within a interactive srun bash session
+
+```bash
+$ srun -C gpu --pty --job-name=trecs-sarus --ntasks=1 --cpus-per-task=1 --mem=16G bash
+~> sarus pull phdenzel/trecs:latest
+~> exit
+```
+
+Once, the image is pulled, you can run the trecs executable in the container with
+```bash
+$ srun -C gpu -N 1 sarus run \
+   	 --mount=type,bind,source=$SCRATCH/TRECS_Inputs,destination=/home/phdenzel/TRECS/TRECS_Inputs \
+	 --mount=type,bind,source=$SCRATCH/TRECS_Outputs,destination=/home/phdenzel/TRECS/TRECS_Outputs \
+	 --mount=type,bind,source=$HOME/TRECS/examples,destination=/home/phdenzel/TRECS/examples \
+	 phdenzel/trecs -c 'trecs -c -p TRECS/examples/docker_pars.ini'
+```
+and
+```bash
+$ srun -C gpu -N 1 sarus run \
+   	 --mount=type,bind,source=$SCRATCH/TRECS_Inputs,destination=/home/phdenzel/TRECS/TRECS_Inputs \
+	 --mount=type,bind,source=$SCRATCH/TRECS_Outputs,destination=/home/phdenzel/TRECS/TRECS_Outputs \
+	 --mount=type,bind,source=$HOME/TRECS/examples,destination=/home/phdenzel/TRECS/examples \
+	 phdenzel/trecs -c 'trecs -w -p TRECS/examples/docker_pars.ini'
+```
+
+Note that the user home directory `/home/phdenzel` within the image
+has to be adjusted in case a self-built image is used.
