@@ -97,12 +97,6 @@ $ unzip TRECS_Inputs.zip
 $ mkdir -p $SCRATCH/TRECS_Outputs
 ```
 
-Change the paths in Makefile include file `$SCRATCH/TRECS/.make/docker.inc`
-```make
-TRECS_INPUTS_DIR = $(SCRATCH)/TRECS_Inputs
-TRECS_OUTPUTS_DIR = $(SCRATCH)/TRECS_Outputs
-```
-
 Then, load all necessary modules for sarus, e.g.
 ```bash
 $ module load daint-mc
