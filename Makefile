@@ -103,9 +103,8 @@ include $(TOPSRCDIR)/.make/docker.inc
 auto-download:
 	@[ -e $(TRECS_INPUTS_DIR) ] || \
 		{ echo "TRECS_Inputs doesn't exist at $(TRECS_INPUTS_DIR), starting download..." ; \
-			wget -c -O $(TRECS_INPUTS_DIR).tgz https://www.dropbox.com/s/3u4wtk1fxps6fwg/TRECS_Inputs.zip?dl=1; \
-		  bsdtar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)) \
-			|| tar xvf $(TRECS_INPUTS_DIR).tgz -C $(dir $(TRECS_INPUTS_DIR)); }
+		  wget -c -O $(TRECS_INPUTS_DIR).zip https://www.dropbox.com/s/3u4wtk1fxps6fwg/TRECS_Inputs.zip?dl=1; \
+		  unzip $(TRECS_INPUTS_DIR).zip; }
 	mkdir -p $(TRECS_OUTPUTS_DIR)
 
 docker-volume: auto-download
