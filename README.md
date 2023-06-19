@@ -87,40 +87,58 @@ $ make docker-run-trecs-wrapper
 systems. It can essentially be analogously used to docker (using the
 same subcommands).
 
-On CSCS (Piz Daint), first load all necessary modules for sarus, e.g.
+On CSCS (Piz Daint), first clone the `phdenzel/TRECS` fork to
+$SCRATCH, and download the TRECS input catalogues with
 
 ```bash
-$ module load daint-gpu
+$ cd $SCRATCH && git clone git@github.com:phdenzel/TRECS.git && cd TRECS && git checkout docker
+$ wget -c -O $SCRATCH/TRECS_Inputs.zip https://www.dropbox.com/s/3u4wtk1fxps6fwg/TRECS_Inputs.zip?dl=1
+$ unzip TRECS_Inputs.zip
+$ mkdir -p $SCRATCH/TRECS_Outputs
+```
+
+Change the paths in Makefile include file `$SCRATCH/TRECS/.make/docker.inc`
+```make
+TRECS_INPUTS_DIR = $(SCRATCH)/TRECS_Inputs
+TRECS_OUTPUTS_DIR = $(SCRATCH)/TRECS_Outputs
+```
+
+Then, load all necessary modules for sarus, e.g.
+```bash
+$ module load daint-mc
 $ module load sarus
 ```
 
 To run the image with `sarus`, first upload the built image to your
 own docker hub registry, or alternatively use mine
 (phdenzel/trecs:latest). Then, pull the image into your personal local
-repository within a interactive srun bash session
-
+repository with `srun` to take advantage of the RAM system
 ```bash
-$ srun -C gpu --pty --job-name=trecs-sarus --ntasks=1 --cpus-per-task=1 --mem=16G bash
-~> sarus pull phdenzel/trecs:latest
-~> exit
+$ srun --constraint=mc --partition=prepost --job-name=trecs-sarus-pull --time=00:15:00 --hint=nomultithread sarus pull phdenzel/trecs:latest
 ```
 
 Once, the image is pulled, you can run the trecs executable in the container with
 ```bash
-$ srun -C gpu -N 1 sarus run \
-   	 --mount=type,bind,source=$SCRATCH/TRECS_Inputs,destination=/home/phdenzel/TRECS/TRECS_Inputs \
-	 --mount=type,bind,source=$SCRATCH/TRECS_Outputs,destination=/home/phdenzel/TRECS/TRECS_Outputs \
-	 --mount=type,bind,source=$HOME/TRECS/examples,destination=/home/phdenzel/TRECS/examples \
-	 phdenzel/trecs -c 'trecs -c -p TRECS/examples/docker_pars.ini'
+$ srun --constraint=mc --partition=normal --time=01:00:00 --job-name=trecs-sarus \
+       --nodes=1 --ntasks-per-core=1 --ntasks-per-node=1 --cpus-per-task=1 \
+       sarus run \
+       --mount=type,bind,src=$SCRATCH/TRECS_Inputs,dst=/home/phdenzel/TRECS/TRECS_Inputs \
+       --mount=type,bind,src=$SCRATCH/TRECS_Outputs,dst=/home/phdenzel/TRECS/TRECS_Outputs \
+       --mount=type,bind,src=$SCRATCH/TRECS/examples,dst=/home/phdenzel/TRECS/examples \
+       phdenzel/trecs -c 'trecs -c -p TRECS/examples/docker_pars.in'
 ```
+
 and
+
 ```bash
-$ srun -C gpu -N 1 sarus run \
-   	 --mount=type,bind,source=$SCRATCH/TRECS_Inputs,destination=/home/phdenzel/TRECS/TRECS_Inputs \
-	 --mount=type,bind,source=$SCRATCH/TRECS_Outputs,destination=/home/phdenzel/TRECS/TRECS_Outputs \
-	 --mount=type,bind,source=$HOME/TRECS/examples,destination=/home/phdenzel/TRECS/examples \
-	 phdenzel/trecs -c 'trecs -w -p TRECS/examples/docker_pars.ini'
+$ srun --constraint=mc --partition=normal --time=01:00:00 --job-name=trecs-sarus \
+       --nodes=1 --ntasks-per-core=1 --ntasks-per-node=1 --cpus-per-task=1 \
+       sarus run \
+       --mount=type,bind,src=$SCRATCH/TRECS_Inputs,dst=/home/phdenzel/TRECS/TRECS_Inputs \
+       --mount=type,bind,src=$SCRATCH/TRECS_Outputs,dst=/home/phdenzel/TRECS/TRECS_Outputs \
+       --mount=type,bind,src=$SCRATCH/TRECS/examples,dst=/home/phdenzel/TRECS/examples \
+       phdenzel/trecs -c 'trecs -w -p TRECS/examples/docker_pars.ini'
 ```
 
 Note that the user home directory `/home/phdenzel` within the image
-has to be adjusted in case a self-built image is used.
+has to be adjusted in case another container image is used.
